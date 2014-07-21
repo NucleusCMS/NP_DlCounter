@@ -21,11 +21,12 @@ History:
 */
 
 class NP_DlCounter extends NucleusPlugin {
+    function getMinNucleusVersion() { return '350';}
     function getName() { return 'Download Counter'; }
     function getAuthor()  { return 'Drew Phillips | Rodrigo Moraes (conversion to plugin) | Edmond Hui (admun)'; }
     function getURL()  { return 'http://www.drew-phillips.com'; }
     function getVersion() { return '1.0'; }
-    function supportsFeature($SqlTablePrefix) { return 1; }
+    function supportsFeature($w) { return ($w==='SqlTablePrefix') ? 1 : 0; }
     function getDescription() { return 'A simple download counter.'; }
     function getEventList() { return array('PreSkinParse', 'PreItem', 'QuickMenu'); }
 
@@ -87,16 +88,16 @@ class NP_DlCounter extends NucleusPlugin {
             $cookie = str_replace(".", "_", $file);  
 
             $query = "SELECT * FROM ".sql_table('plug_dl_count')." WHERE file = '".$file."'";
-            $result = mysql_query($query);
+            $result = sql_query($query);
             if(!$result) {
-                echo mysql_error();
+                echo sql_error();
                 exit;
             }
             
-            if(mysql_num_rows($result) == 0) {
+            if(sql_num_rows($result) == 0) {
                 //first use of this file
                 $query = "INSERT INTO ".sql_table('plug_dl_count')." VALUES('".$file."', 1)";
-                $result = mysql_query($query);
+                $result = sql_query($query);
                     if ($this->getOption('usecookie') == 'yes') {
                         setcookie("dl_" . $cookie, "set", time() + 60*60*24*365);
                     }
@@ -105,7 +106,7 @@ class NP_DlCounter extends NucleusPlugin {
             else {
                 if(!isset($_COOKIE['dl_' . $cookie]) || $this->getOption('usecookie') != 'yes') {
                     $query = "UPDATE ".sql_table('plug_dl_count')." SET count = count + 1 WHERE file = '".$file."'";
-                    $result = mysql_query($query);
+                    $result = sql_query($query);
                     if ($this->getOption('usecookie') == 'yes') {
                         setcookie("dl_". $cookie, "set", time() + 60*60*24*365,$CONF['CookiePath'],$CONF['CookieDomain'],$CONF['CookieSecure']);
                     }
@@ -148,10 +149,10 @@ class NP_DlCounter extends NucleusPlugin {
 
         $query = "SELECT count FROM ".sql_table('plug_dl_count')." WHERE file = '".$mem->getID()."/".$arg2."'";
         $result = sql_query($query);
-        if(mysql_num_rows($result) == 0) {
+        if(sql_num_rows($result) == 0) {
             $count = "0"; }
         else {
-            $counter = mysql_fetch_row($result);
+            $counter = sql_fetch_row($result);
             $count = $counter[0]; }
 
         if(!$arg2) {

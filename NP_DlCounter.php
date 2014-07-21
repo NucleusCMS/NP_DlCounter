@@ -35,7 +35,7 @@ class NP_DlCounter extends NucleusPlugin {
         $this->createOption('showSize', 'Show file size', 'yesno', 'yes');
         sql_query('CREATE TABLE IF NOT EXISTS '.sql_table('plug_dl_count').' ( '.
             'file VARCHAR(255) NOT NULL, '.
-            'count INT NOT NULL '.
+            "count INT NOT NULL default '0'".
             ')');
     }
 

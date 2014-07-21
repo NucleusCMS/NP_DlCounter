@@ -25,7 +25,7 @@ History:
 class NP_DlCounter extends NucleusPlugin {
     function getMinNucleusVersion() { return '350';}
     function getName()              { return 'Download Counter'; }
-    function getAuthor()            { return 'Drew Phillips | Rodrigo Moraes (conversion to plugin) | Edmond Hui (admun)'; }
+    function getAuthor()            { return 'Drew Phillips | Rodrigo Moraes (conversion to plugin) | Edmond Hui (admun) | yama'; }
     function getURL()               { return 'http://www.drew-phillips.com'; }
     function getVersion()           { return '1.1'; }
     function supportsFeature($w)    { return ($w==='SqlTablePrefix') ? 1 : 0; }
@@ -91,7 +91,6 @@ class NP_DlCounter extends NucleusPlugin {
             if ($this->getOption('usecookie') == 'yes')
                 setcookie("dl_{$cookie}", 'set', $expire);
         }
-        
         elseif(!isset($_COOKIE["dl_{$cookie}"]) || $this->getOption('usecookie') != 'yes') {
             $query = "UPDATE {$tbl_plug_dl_count} SET count=count+1 WHERE file='{$file}'";
             $result = sql_query($query);
@@ -99,10 +98,9 @@ class NP_DlCounter extends NucleusPlugin {
                 setcookie("dl_{$cookie}", 'set', $expire, $CONF['CookiePath'],$CONF['CookieDomain'],$CONF['CookieSecure']);
         }
 
-        header("Location: " . $CONF['Self'] . "/media/" . $file);
+        header("Location: " . $CONF['Self'] . "/media/{$file}");
 
-    } //event_PreSkinParse
-
+    }
 
     function replaceCallback($matches) {
         global $manager, $blog;
@@ -110,12 +108,15 @@ class NP_DlCounter extends NucleusPlugin {
         if ($blog === '')
         	$blog =& $manager->getBlog($CONF['DefaultBlog']);
 
-		$mem = MEMBER::createFromName($matches[1]);
-        return '<a href="' . $blog->getURL() . "?file=". $mem->getID() . "/".$matches[2]."\">".$matches[3]."</a>";
+		$member_name   = $matches[1];
+		$file_name     = $matches[2];
+		$linked_string = $matches[3];
+		$mem = MEMBER::createFromName($member_name);
+		return sprintf('<a href="%s?file=%s/%s">%s</a>', $blog->getURL(), $mem->getID(), $file_name, $linked_string);
     }
 
     function event_PreItem($data) {
-		$this->currentItem = &$data["item"];
+		$this->currentItem = &$data['item'];
 		$pattern = "#<\%DlCounter\((.*?)\,(.*?)\,(.*?)\)\%\>#";
 		$this->currentItem->body = preg_replace_callback($pattern, array(&$this, 'replaceCallback'), $this->currentItem->body);
 		$this->currentItem->more = preg_replace_callback($pattern, array(&$this, 'replaceCallback'), $this->currentItem->more);
@@ -146,8 +147,7 @@ class NP_DlCounter extends NucleusPlugin {
         if ($arg4 == '1') echo $count;
         else {
         	$blog_url = $blog->getURL();
-            echo '<a href="' . "{$blog_url}?file={$memberid}/{$arg2}" . '">' . "{$arg3}</a>";
-            echo " ({$size}{$count}x)";
+            echo '<a href="' . "{$blog_url}?file={$memberid}/{$arg2}" . '">' . "{$arg3}</a> ({$size}{$count}x)";
         }
-    } // doSkinVar
-} // class
+    }
+}

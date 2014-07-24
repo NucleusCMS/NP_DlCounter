@@ -30,7 +30,7 @@ class NP_DlCounter extends NucleusPlugin {
     function getVersion()           { return '1.1'; }
     function supportsFeature($w)    { return ($w==='SqlTablePrefix') ? 1 : 0; }
     function getDescription()       { return 'A simple download counter.'; }
-    function getEventList()         { return array('PreSkinParse', 'PreItem', 'QuickMenu'); }
+    function getEventList()         { return explode(',', 'PreSkinParse,PreItem,QuickMenu'); }
     function getTableList()         { array( sql_table('plug_dl_count') ); }
     function hasAdminArea()         { return 1; }
 
@@ -59,20 +59,20 @@ class NP_DlCounter extends NucleusPlugin {
     }
 
     function event_PreSkinParse(&$data) {
-        global $_COOKIE, $_GET, $CONF, $DIR_MEDIA;
+        global $CONF, $DIR_MEDIA;
         
         if(!isset($_GET['file'])) return;
         
         $tbl_plug_dl_count = sql_table('plug_dl_count');
         $expire = time() + 60*60*24*365;
         
-        $file = $_GET['file'];
+        $file = getVar('file');
 
         if(empty($file))                   exit('No File Specified');
         if(strpos($file, '..') !== FALSE)  exit('Error.');
         if(strpos($file, '://') !== FALSE) exit('Invalid File');
         //if the last two checks didnt get rid of a malicious user, this next one certainly will
-        if(!is_file($DIR_MEDIA . $file))   exit("Specified file {$file} doesn't exist.");
+        if(!is_file("{$DIR_MEDIA}{$file}"))   exit("Specified file {$file} doesn't exist.");
 
         // cookie fix
         $cookie = str_replace('.', '_', $file);  
@@ -99,7 +99,6 @@ class NP_DlCounter extends NucleusPlugin {
         }
 
         header("Location: " . $CONF['Self'] . "/media/{$file}");
-
     }
 
     function replaceCallback($matches) {
